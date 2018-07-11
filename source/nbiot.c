@@ -137,14 +137,14 @@ int nbiot_device_create( nbiot_device_t **dev,
 
     if ( nbiot_udp_create( &tmp->sock ) )
     {
-        nbiot_free( tmp );
+        //nbiot_free( tmp );
 
         return NBIOT_ERR_INTERNAL;
     }
 
     if ( nbiot_udp_bind(tmp->sock,NULL,local_port) )
     {
-        nbiot_free( tmp );
+        //nbiot_free( tmp );
 
         return NBIOT_ERR_INTERNAL;
     }
@@ -153,7 +153,7 @@ int nbiot_device_create( nbiot_device_t **dev,
     if ( dtls_init_context(&tmp->dtls,&dtls_cb,tmp) )
     {
         nbiot_udp_close( tmp->sock );
-        nbiot_free( tmp );
+        //nbiot_free( tmp );
 
         return NBIOT_ERR_DTLS;
     }
@@ -166,7 +166,7 @@ int nbiot_device_create( nbiot_device_t **dev,
 #endif
         nbiot_udp_close( tmp->sock );
         lwm2m_close( &tmp->lwm2m );
-        nbiot_free( tmp );
+        //nbiot_free( tmp );
 
         return NBIOT_ERR_INTERNAL;
     }
