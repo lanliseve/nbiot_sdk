@@ -102,7 +102,7 @@ typedef struct nbiot_device_t nbiot_device_t;
  *        port          本地UDP绑定端口
  * @return 成功返回NBIOT_ERR_OK
 **/
-int nbiot_device_create( nbiot_device_t **dev,
+int nbiot_device_create( nbiot_device_t *dev,
                          uint16_t         local_port );
 
 /**

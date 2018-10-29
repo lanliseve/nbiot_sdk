@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <struct.h>
+#include <string.h>
 
 void usage( const char *name )
 {
@@ -170,7 +172,8 @@ int main( int argc, char *argv[] )
         int i = 0;
         int ret;
         char tmp[16];
-        nbiot_device_t *dev = NULL;
+        nbiot_device_t *dev = malloc(sizeof(nbiot_device_t));
+
 
         nbiot_resource_t dis;  /* ipso digital input - digital input state */
         nbiot_resource_t dic;  /* ipso digital input - digital input counter */
@@ -178,6 +181,8 @@ int main( int argc, char *argv[] )
         nbiot_resource_t at;   /* ipso digital input - application type */
         nbiot_resource_t aicv; /* ipso analog input - analog input current value */
         nbiot_resource_t *res[5];
+
+        memset(dev, 0x00, sizeof(nbiot_device_t));
 
         res[i++] = &dis;
         res[i++] = &dic;
@@ -237,13 +242,14 @@ int main( int argc, char *argv[] )
         aicv.write          = NULL;
         aicv.execute        = NULL;
 
-        ret = nbiot_device_create( &dev, port );
+        ret = nbiot_device_create( dev, port );
         if ( ret )
         {
             nbiot_printf( "create device instance failed.\r\n" );
             break;
         }
 
+        nbiot_printf( "create successfully" );
         ret = nbiot_device_connect( dev,
                                     uri,
                                     life_time );
@@ -370,11 +376,9 @@ int main( int argc, char *argv[] )
         nbiot_device_destroy( dev );
         nbiot_free( dicr.value.as_bin.bin );
         nbiot_free( at.value.as_str.str );
+        free(dev);
     } while(0);
     nbiot_clear_environment();
-
-    nbiot_printf( "press enter key to exit..." );
-    getchar();
 
     return 0;
 }

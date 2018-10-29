@@ -6,14 +6,12 @@
 #ifndef NBIOT_INClUDE_PLATFORM_H_
 #define NBIOT_INClUDE_PLATFORM_H_
 
-#if defined(NBIOT_WIN) || defined(NBIOT_POSIX)
 #include <stddef.h>   /* for size_t */
 #include <stdint.h>   /* for integer types */
 #include <stdbool.h>  /* for bool */
 #include <time.h>     /* for time_t clock_t */
 #include <float.h>    /* for DBL_MAX */
 #include <inttypes.h> /* fro PRId64 */
-#endif
 
 #include "config.h"
 
