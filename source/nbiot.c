@@ -4,10 +4,8 @@
 **/
 
 #include <nbiot.h>
+#include <stdio.h>
 #include "struct.h"
-
-/* 全局唯一实例 */
-static nbiot_device_t g_dev;
 
 static inline lwm2m_object_t* nbiot_object_find( nbiot_device_t *dev,
                                                  uint16_t        objid )
@@ -115,63 +113,47 @@ static dtls_handler_t dtls_cb =
 };
 #endif
 
-int nbiot_device_create( nbiot_device_t **dev,
+int nbiot_device_create( nbiot_device_t *dev,
                          uint16_t         local_port )
 {
-    nbiot_device_t *tmp;
 
     if ( NULL == dev )
     {
         return NBIOT_ERR_BADPARAM;
     }
 
-    tmp = &g_dev;
-    if ( NULL == tmp )
-    {
-        return NBIOT_ERR_NO_MEMORY;
-    }
-    else
-    {
-        nbiot_memzero( tmp, sizeof(nbiot_device_t) );
-    }
+    nbiot_memzero( dev, sizeof(nbiot_device_t) );
 
-    if ( nbiot_udp_create( &tmp->sock ) )
+    if ( nbiot_udp_create( &dev->sock ) )
     {
-        //nbiot_free( tmp );
-
         return NBIOT_ERR_INTERNAL;
     }
 
-    if ( nbiot_udp_bind(tmp->sock,NULL,local_port) )
+    if ( nbiot_udp_bind(dev->sock,NULL,local_port) )
     {
-        //nbiot_free( tmp );
-
         return NBIOT_ERR_INTERNAL;
     }
 
 #ifdef HAVE_DTLS
-    if ( dtls_init_context(&tmp->dtls,&dtls_cb,tmp) )
+    if ( dtls_init_context(&dev->dtls,&dtls_cb, dev )
     {
-        nbiot_udp_close( tmp->sock );
-        //nbiot_free( tmp );
+        nbiot_udp_close( dev->sock );
 
         return NBIOT_ERR_DTLS;
     }
 #endif
 
-    if ( lwm2m_init(&tmp->lwm2m,tmp) )
+    if ( lwm2m_init(&dev->lwm2m,dev) )
     {
 #ifdef HAVE_DTLS
-        dtls_close_context( &tmp->dtls );
+        dtls_close_context( &dev->dtls );
 #endif
-        nbiot_udp_close( tmp->sock );
-        lwm2m_close( &tmp->lwm2m );
-        //nbiot_free( tmp );
+        nbiot_udp_close( dev->sock );
+        lwm2m_close( &dev->lwm2m );
 
         return NBIOT_ERR_INTERNAL;
     }
 
-    *dev = tmp;
     return NBIOT_ERR_OK;
 }
 
@@ -360,6 +342,7 @@ int nbiot_device_step( nbiot_device_t *dev,
                        time_t          timeout )
 {
     int ret;
+    int retLwm2m;
     size_t read;
     connection_t *conn;
     uint8_t buff[NBIOT_SOCK_RECV_BUF_SIZE];
@@ -409,8 +392,10 @@ int nbiot_device_step( nbiot_device_t *dev,
         }
     } while(1);
 
-    if ( lwm2m_step(&dev->lwm2m,&timeout) )
+    retLwm2m =  lwm2m_step(&dev->lwm2m,&timeout);
+    if ( retLwm2m )
     {
+        printf("retLwm2m: %d\n", retLwm2m);
         return NBIOT_ERR_INTERNAL;
     }
 
